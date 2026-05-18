@@ -1,0 +1,23 @@
+Package: verdict
+Title: Flexible Evaluation of Multiclass Classification Models
+Version: 0.0.0.9000
+Authors@R: 
+    person("Thelma", "Panaïotis", , "thelma.panaiotis.pub@proton.me", role = c("aut", "cre"))
+Description: Extends the yardstick package with a classification_report()
+    function that returns per-class precision, recall, F1-score, and support,
+    along with macro and weighted averages (analogous to
+    sklearn.metrics.classification_report). Supports excluding specific classes
+    from average computations, motivated by imbalanced multiclass problems such
+    as plankton image classification where a dominant "detritus" class biases
+    aggregate metrics.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0
+Imports: 
+    dplyr,
+    rlang,
+    tibble

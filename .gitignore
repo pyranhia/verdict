@@ -38,6 +38,9 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+renv/library/
+renv/python/
+renv/staging/
 
 # pkgdown site
 docs/
@@ -47,3 +50,5 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+.Rdata
+.DS_Store
