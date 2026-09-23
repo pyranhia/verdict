@@ -12,16 +12,23 @@ tools for multiclass classification models.
 
 It fills two gaps in yardstick:
 
-- No `classification_report()` equivalent to
-  [sklearn’s](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)
-  ([yardstick
-  \#308](https://github.com/tidymodels/yardstick/issues/308))
+- No `classification_report()` returning per-class precision, recall,
+  F1, and support ([yardstick
+  \#308](https://github.com/tidymodels/yardstick/issues/308), open since
+  2022; see also
+  [\#326](https://github.com/tidymodels/yardstick/issues/326))
 - No way to exclude specific classes from aggregate metric computation
 
 **Motivation:** benchmarking plankton image classifiers ([Panaïotis et
-al., 2022, *Earth System Science
-Data*](https://essd.copernicus.org/articles/18/945/2026/)) where a
-dominant “detritus” class biases macro and weighted averages.
+al., 2026, *Earth System Science
+Data*](https://essd.copernicus.org/articles/18/945/2026/)). Real-world
+plankton datasets are usually dominated by non-living particles (marine
+snow, bubbles, etc.) grouped into a “detritus” class. A classifier that
+always predicts this majority class can reach high overall accuracy
+while giving no insight into the rarer, ecologically meaningful classes.
+Macro and weighted averages inherit that same bias; hence the need to
+exclude “detritus” (or any other irrelevant class) from precision,
+recall, and F1 averages.
 
 ## Installation
 
@@ -70,5 +77,3 @@ classification_report(df, truth, pred)
 
 - [yardstick](https://yardstick.tidymodels.org/): tidy models metric
   estimation
-- [sklearn.metrics.classification_report](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html):
-  the Python reference
