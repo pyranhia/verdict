@@ -65,13 +65,49 @@ classification_report(df, truth, pred)
 #> 5 weighted avg     0.688  0.625 0.639       8
 ```
 
+Excluding a class (e.g. a dominant, uninformative “detritus” class) from
+the averages:
+
+``` r
+classification_report(df, truth, pred, classes_exclude = "fish")
+#> # A tibble: 4 × 5
+#>   class        precision recall    f1 support
+#>   <chr>            <dbl>  <dbl> <dbl>   <int>
+#> 1 cat                0.5  0.5   0.5         2
+#> 2 dog                0.5  0.667 0.571       3
+#> 3 macro avg          0.5  0.583 0.536       5
+#> 4 weighted avg       0.5  0.6   0.543       5
+```
+
+Single-value metrics, matching yardstick’s output format
+(`.metric`/`.estimator`/`.estimate`), also support `classes_exclude`:
+
+``` r
+precision(df, truth, pred)
+#> # A tibble: 1 × 3
+#>   .metric   .estimator .estimate
+#>   <chr>     <chr>          <dbl>
+#> 1 precision macro          0.667
+recall(df, truth, pred, estimator = "macro_weighted")
+#> # A tibble: 1 × 3
+#>   .metric .estimator     .estimate
+#>   <chr>   <chr>              <dbl>
+#> 1 recall  macro_weighted     0.625
+f1_meas(df, truth, pred, classes_exclude = "fish")
+#> # A tibble: 1 × 3
+#>   .metric .estimator .estimate
+#>   <chr>   <chr>          <dbl>
+#> 1 f1      macro          0.536
+```
+
 ## Roadmap
 
 | Version | Content |
 |----|----|
 | v1.0 | `classification_report()`: precision, recall, F1, support per class with macro and weighted averages |
 | v1.1 | `classes_exclude` argument on aggregate metrics: exclude specific classes from average computation |
-| v1.2 | `class_weights` argument: custom weighting independent of class frequencies |
+| v1.2 | `precision()`, `recall()`, `f1_meas()`: single-value metrics matching yardstick’s output format, with `classes_exclude` and `estimator` (`"macro"`/`"macro_weighted"`) support |
+| v1.3 | Full yardstick S3 integration (`class_metric_summarizer`), for use in `metric_set()` / `tune_grid()` |
 
 ## Related work
 
