@@ -4,7 +4,7 @@
 \alias{classification_report}
 \title{Classification report for multiclass models}
 \usage{
-classification_report(data, truth, estimate, ...)
+classification_report(data, truth, estimate, classes_exclude = NULL, ...)
 }
 \arguments{
 \item{data}{A data frame containing columns for truth and predictions.}
@@ -14,16 +14,21 @@ classification_report(data, truth, estimate, ...)
 \item{estimate}{The column name (unquoted) of the predicted class labels
 (factor with the same levels as \code{truth}).}
 
+\item{classes_exclude}{Character vector of class names to exclude from the
+report. Excluded classes have no row in the output and do not contribute
+to the macro avg, weighted avg, or total support. Default \code{NULL}
+includes all classes.}
+
 \item{...}{Currently unused. Reserved for future arguments.}
 }
 \value{
-A tibble with one row per class plus two summary rows (\code{"macro avg"}
-and \code{"weighted avg"}), and columns \code{class}, \code{precision}, \code{recall}, \code{f1},
-\code{support}.
+A tibble with one row per included class plus two summary rows
+(\code{"macro avg"} and \code{"weighted avg"}), and columns \code{class}, \code{precision},
+\code{recall}, \code{f1}, \code{support}.
 }
 \description{
 Returns per-class precision, recall, F1-score, and support, plus macro and
-weighted averages. Inspired by \code{sklearn.metrics.classification_report}.
+weighted averages.
 }
 \examples{
 library(tibble)
@@ -34,5 +39,8 @@ pred  <- factor(c("cat", "dog", "dog", "dog", "fish", "cat"),
 df <- tibble(truth = truth, pred = pred)
 
 classification_report(df, truth, pred)
+
+# Focus on mammals: exclude "fish" from the averages
+classification_report(df, truth, pred, classes_exclude = "fish")
 
 }
