@@ -1,13 +1,15 @@
 Package: verdict
 Title: Flexible Evaluation of Multiclass Classification Models
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     person("Thelma", "Panaïotis", , "thelma.panaiotis.pub@proton.me", role = c("aut", "cre"))
 Description: Extends the yardstick package with a classification_report()
     function that returns per-class precision, recall, F1-score, and support,
-    along with macro and weighted averages. Supports excluding specific classes
-    from average computations, motivated by imbalanced multiclass problems such
-    as plankton image classification where a dominant "detritus" class biases
+    along with macro and weighted averages. Also provides single-value
+    precision(), recall(), and f1_meas() functions matching yardstick's
+    output format. Supports excluding specific classes from average
+    computations, motivated by imbalanced multiclass problems such as
+    plankton image classification where a dominant "detritus" class biases
     aggregate metrics.
 License: MIT + file LICENSE
 Encoding: UTF-8

@@ -67,14 +67,13 @@ recall(df, truth, pred, estimator = "macro_weighted")
 f1_meas(df, truth, pred, classes_exclude = "fish")
 ```
 
-## Roadmap
+## Development
 
-| Version | Content |
-|---------|---------|
-| v1.0 | `classification_report()`: precision, recall, F1, support per class with macro and weighted averages |
-| v1.1 | `classes_exclude` argument on aggregate metrics: exclude specific classes from average computation |
-| v1.2 | `precision()`, `recall()`, `f1_meas()`: single-value metrics matching yardstick's output format, with `classes_exclude` and `estimator` (`"macro"`/`"macro_weighted"`) support |
-| v1.3 | Full yardstick S3 integration (`class_metric_summarizer`), for use in `metric_set()` / `tune_grid()` |
+See [`NEWS.md`](NEWS.md) for the release history.
+
+Planned next: full integration with yardstick's S3 metric protocol
+(`class_metric_summarizer`), so `precision()`, `recall()`, and `f1_meas()`
+can be used directly in `metric_set()` and `tune_grid()`.
 
 ## Related work
 
