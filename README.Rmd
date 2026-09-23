@@ -53,13 +53,28 @@ df <- tibble(truth = truth, pred = pred)
 classification_report(df, truth, pred)
 ```
 
+Excluding a class (e.g. a dominant, uninformative "detritus" class) from the averages:
+
+```{r}
+classification_report(df, truth, pred, classes_exclude = "fish")
+```
+
+Single-value metrics, matching yardstick's output format (`.metric`/`.estimator`/`.estimate`), also support `classes_exclude`:
+
+```{r}
+precision(df, truth, pred)
+recall(df, truth, pred, estimator = "macro_weighted")
+f1_meas(df, truth, pred, classes_exclude = "fish")
+```
+
 ## Roadmap
 
 | Version | Content |
 |---------|---------|
 | v1.0 | `classification_report()`: precision, recall, F1, support per class with macro and weighted averages |
 | v1.1 | `classes_exclude` argument on aggregate metrics: exclude specific classes from average computation |
-| v1.2 | `class_weights` argument: custom weighting independent of class frequencies |
+| v1.2 | `precision()`, `recall()`, `f1_meas()`: single-value metrics matching yardstick's output format, with `classes_exclude` and `estimator` (`"macro"`/`"macro_weighted"`) support |
+| v1.3 | Full yardstick S3 integration (`class_metric_summarizer`), for use in `metric_set()` / `tune_grid()` |
 
 ## Related work
 
