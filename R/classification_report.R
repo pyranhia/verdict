@@ -35,21 +35,7 @@ classification_report <- function(data, truth, estimate, classes_exclude = NULL,
   truth_col    <- rlang::as_name(rlang::ensym(truth))
   estimate_col <- rlang::as_name(rlang::ensym(estimate))
 
-  classes <- levels(data[[truth_col]])
-
-  if (!is.null(classes_exclude)) {
-    unknown <- setdiff(classes_exclude, classes)
-    if (length(unknown) > 0) {
-      rlang::abort(paste0(
-        "`classes_exclude` contains class(es) not found in `truth`: ",
-        paste(unknown, collapse = ", ")
-      ))
-    }
-    classes <- setdiff(classes, classes_exclude)
-    if (length(classes) == 0) {
-      rlang::abort("`classes_exclude` excludes all classes; nothing left to report.")
-    }
-  }
+  classes <- .apply_classes_exclude(levels(data[[truth_col]]), classes_exclude)
 
   per_class <- .compute_per_class(data[[truth_col]], data[[estimate_col]], classes)
 
