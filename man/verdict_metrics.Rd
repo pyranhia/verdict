@@ -13,10 +13,19 @@ precision(
   estimate,
   estimator = "macro",
   classes_exclude = NULL,
+  na_rm = TRUE,
   ...
 )
 
-recall(data, truth, estimate, estimator = "macro", classes_exclude = NULL, ...)
+recall(
+  data,
+  truth,
+  estimate,
+  estimator = "macro",
+  classes_exclude = NULL,
+  na_rm = TRUE,
+  ...
+)
 
 f1_meas(
   data,
@@ -24,6 +33,7 @@ f1_meas(
   estimate,
   estimator = "macro",
   classes_exclude = NULL,
+  na_rm = TRUE,
   ...
 )
 }
@@ -43,6 +53,9 @@ per-class scores unweighted, \code{"macro_weighted"} weights by support.}
 average. Excluded classes do not contribute to the metric. Default
 \code{NULL} includes all classes.}
 
+\item{na_rm}{If \code{TRUE} (default), rows where \code{truth} or \code{estimate} is
+missing are dropped. If \code{FALSE}, missing values raise an error.}
+
 \item{...}{Currently unused. Reserved for future arguments.}
 }
 \value{
@@ -54,6 +67,10 @@ Single-value precision, recall, and F1-score, matching the yardstick
 output format (\code{.metric}, \code{.estimator}, \code{.estimate}), with support for
 excluding specific classes from the average — the same \code{classes_exclude}
 logic as \code{\link[=classification_report]{classification_report()}}.
+}
+\details{
+Classes that are never predicted, or absent from \code{truth}, contribute 0 to
+the average, with a warning; see \code{\link[=classification_report]{classification_report()}} for details.
 }
 \examples{
 library(tibble)

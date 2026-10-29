@@ -1,3 +1,17 @@
+# verdict (development version)
+
+* Classes with zero true positives now get F1 = 0 instead of `NA`. They
+  were previously dropped from the macro and weighted averages, which
+  inflated those averages.
+* Undefined precision (class never predicted) or recall (class absent from
+  `truth`) is now set to 0 with a warning, matching scikit-learn's default
+  `zero_division` behaviour. Classes absent from both `truth` and
+  `estimate` get `NA` and are left out of the averages.
+* New `na_rm` argument (default `TRUE`): rows with a missing `truth` or
+  `estimate` are dropped instead of causing an error.
+* `truth` and `estimate` must now be factors with identical levels, with
+  an informative error otherwise.
+
 # verdict 0.1.0
 
 First functional release.

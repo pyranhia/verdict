@@ -15,7 +15,13 @@
 #' @param classes_exclude Character vector of class names to exclude from the
 #'   average. Excluded classes do not contribute to the metric. Default
 #'   `NULL` includes all classes.
+#' @param na_rm If `TRUE` (default), rows where `truth` or `estimate` is
+#'   missing are dropped. If `FALSE`, missing values raise an error.
 #' @param ... Currently unused. Reserved for future arguments.
+#'
+#' @details
+#' Classes that are never predicted, or absent from `truth`, contribute 0 to
+#' the average, with a warning; see [classification_report()] for details.
 #'
 #' @return A tibble with one row and columns `.metric`, `.estimator`,
 #'   `.estimate`, matching the yardstick metric output format.
@@ -49,18 +55,18 @@ NULL
 
 #' @rdname verdict_metrics
 #' @export
-precision <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, ...) {
-  .verdict_metric(data, {{ truth }}, {{ estimate }}, "precision", estimator, classes_exclude)
+precision <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, na_rm = TRUE, ...) {
+  .verdict_metric(data, {{ truth }}, {{ estimate }}, "precision", estimator, classes_exclude, na_rm)
 }
 
 #' @rdname verdict_metrics
 #' @export
-recall <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, ...) {
-  .verdict_metric(data, {{ truth }}, {{ estimate }}, "recall", estimator, classes_exclude)
+recall <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, na_rm = TRUE, ...) {
+  .verdict_metric(data, {{ truth }}, {{ estimate }}, "recall", estimator, classes_exclude, na_rm)
 }
 
 #' @rdname verdict_metrics
 #' @export
-f1_meas <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, ...) {
-  .verdict_metric(data, {{ truth }}, {{ estimate }}, "f1", estimator, classes_exclude)
+f1_meas <- function(data, truth, estimate, estimator = "macro", classes_exclude = NULL, na_rm = TRUE, ...) {
+  .verdict_metric(data, {{ truth }}, {{ estimate }}, "f1", estimator, classes_exclude, na_rm)
 }

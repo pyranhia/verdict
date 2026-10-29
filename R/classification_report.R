@@ -11,7 +11,16 @@
 #'   report. Excluded classes have no row in the output and do not contribute
 #'   to the macro avg, weighted avg, or total support. Default `NULL`
 #'   includes all classes.
+#' @param na_rm If `TRUE` (default), rows where `truth` or `estimate` is
+#'   missing are dropped. If `FALSE`, missing values raise an error.
 #' @param ... Currently unused. Reserved for future arguments.
+#'
+#' @details
+#' Undefined ratios are set to 0, as with scikit-learn's default
+#' `zero_division` behaviour: a class that is never predicted gets precision
+#' 0, and a class absent from `truth` gets recall 0. A warning lists the
+#' classes concerned. A class absent from both `truth` and `estimate` gets
+#' `NA` metrics and is left out of the averages.
 #'
 #' @return A tibble with one row per included class plus two summary rows
 #'   (`"macro avg"` and `"weighted avg"`), and columns `class`, `precision`,
@@ -31,13 +40,14 @@
 #' classification_report(df, truth, pred, classes_exclude = "fish")
 #'
 #' @export
-classification_report <- function(data, truth, estimate, classes_exclude = NULL, ...) {
+classification_report <- function(data, truth, estimate, classes_exclude = NULL, na_rm = TRUE, ...) {
   truth_col    <- rlang::as_name(rlang::ensym(truth))
   estimate_col <- rlang::as_name(rlang::ensym(estimate))
 
-  classes <- .apply_classes_exclude(levels(data[[truth_col]]), classes_exclude)
+  inputs  <- .prepare_inputs(data, truth_col, estimate_col, na_rm)
+  classes <- .apply_classes_exclude(levels(inputs$truth), classes_exclude)
 
-  per_class <- .compute_per_class(data[[truth_col]], data[[estimate_col]], classes)
+  per_class <- .compute_per_class(inputs$truth, inputs$estimate, classes)
 
   macro_avg <- tibble::tibble(
     class     = "macro avg",
