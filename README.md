@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/pyranhia/verdict/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pyranhia/verdict/actns/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/pyranhia/verdict/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pyranhia/verdict/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 **verdict** is an R package that extends

@@ -1,34 +1,95 @@
 #' Compute per-class precision, recall, F1, and support
 #'
+#' Counts come from the full confusion matrix, so predictions involving
+#' classes not in `classes` (e.g. excluded ones) still count as FP/FN.
+#'
+#' Undefined ratios follow sklearn's `zero_division = 0`: a class never
+#' predicted gets precision 0, a class absent from `truth` gets recall 0, each
+#' with a warning. A class absent from both gets NA everywhere and is ignored
+#' by the averages.
+#'
 #' @param truth Factor of true labels.
 #' @param estimate Factor of predicted labels.
 #' @param classes Character vector of class levels.
 #' @return A tibble with one row per class.
 #' @noRd
 .compute_per_class <- function(truth, estimate, classes) {
-  rows <- lapply(classes, function(cls) {
-    tp <- sum(truth == cls & estimate == cls)
-    fp <- sum(truth != cls & estimate == cls)
-    fn <- sum(truth == cls & estimate != cls)
+  cm <- table(truth, estimate)
+  tp <- diag(cm)[classes]
+  n_pred <- colSums(cm)[classes]
+  n_true <- rowSums(cm)[classes]
+  fp <- n_pred - tp
+  fn <- n_true - tp
 
-    precision <- if ((tp + fp) == 0) NA_real_ else tp / (tp + fp)
-    recall    <- if ((tp + fn) == 0) NA_real_ else tp / (tp + fn)
-    f1        <- if (is.na(precision) || is.na(recall) || (precision + recall) == 0) {
-      NA_real_
-    } else {
-      2 * precision * recall / (precision + recall)
+  empty         <- n_true == 0 & n_pred == 0
+  never_pred    <- n_true > 0 & n_pred == 0
+  absent_truth  <- n_true == 0 & n_pred > 0
+
+  .warn_classes(never_pred, "never predicted; their precision is set to 0")
+  .warn_classes(absent_truth, "absent from `truth`; their recall is set to 0")
+  .warn_classes(empty, "absent from both `truth` and `estimate`; they are left out of the averages")
+
+  precision <- ifelse(n_pred == 0, 0, tp / n_pred)
+  recall    <- ifelse(n_true == 0, 0, tp / n_true)
+  f1        <- ifelse(empty, NA_real_, 2 * tp / (2 * tp + fp + fn))
+  precision[empty] <- NA_real_
+  recall[empty]    <- NA_real_
+
+  tibble::tibble(
+    class     = classes,
+    precision = unname(precision),
+    recall    = unname(recall),
+    f1        = unname(f1),
+    support   = as.integer(n_true)
+  )
+}
+
+#' Warn about the classes flagged in a named logical vector
+#' @noRd
+.warn_classes <- function(flag, msg) {
+  if (any(flag)) {
+    rlang::warn(paste0(
+      "Some classes are ", msg, ": ",
+      paste(names(flag)[flag], collapse = ", ")
+    ))
+  }
+}
+
+#' Validate truth/estimate columns and handle missing values
+#'
+#' Shared by classification_report() and the single-metric functions.
+#'
+#' @param data A data frame.
+#' @param truth_col,estimate_col Column names (strings).
+#' @param na_rm If `TRUE`, drop rows where either column is NA; otherwise
+#'   abort when NAs are present.
+#' @return A list with elements `truth` and `estimate` (factors).
+#' @noRd
+.prepare_inputs <- function(data, truth_col, estimate_col, na_rm) {
+  truth    <- data[[truth_col]]
+  estimate <- data[[estimate_col]]
+
+  for (col in c(truth_col, estimate_col)) {
+    if (!is.factor(data[[col]])) {
+      rlang::abort(paste0("`", col, "` must be a factor."))
     }
+  }
+  if (!identical(levels(truth), levels(estimate))) {
+    rlang::abort(paste0(
+      "`", truth_col, "` and `", estimate_col, "` must have the same levels, in the same order."
+    ))
+  }
 
-    tibble::tibble(
-      class     = cls,
-      precision = precision,
-      recall    = recall,
-      f1        = f1,
-      support   = as.integer(sum(truth == cls))
-    )
-  })
+  missing <- is.na(truth) | is.na(estimate)
+  if (any(missing)) {
+    if (!na_rm) {
+      rlang::abort("`truth` or `estimate` contains missing values; use `na_rm = TRUE` to drop them.")
+    }
+    truth    <- truth[!missing]
+    estimate <- estimate[!missing]
+  }
 
-  dplyr::bind_rows(rows)
+  list(truth = truth, estimate = estimate)
 }
 
 #' Apply `classes_exclude` validation and filtering to a set of class levels
@@ -77,18 +138,20 @@
 #' @param estimator One of `"macro"` or `"macro_weighted"`.
 #' @param classes_exclude Character vector of class names to exclude, or
 #'   `NULL`.
+#' @param na_rm Passed to `.prepare_inputs()`.
 #' @return A tibble with one row and columns `.metric`, `.estimator`,
 #'   `.estimate`.
 #' @noRd
-.verdict_metric <- function(data, truth, estimate, metric_col, estimator, classes_exclude) {
+.verdict_metric <- function(data, truth, estimate, metric_col, estimator, classes_exclude, na_rm) {
   truth_col    <- rlang::as_name(rlang::ensym(truth))
   estimate_col <- rlang::as_name(rlang::ensym(estimate))
 
   estimator <- rlang::arg_match(estimator, c("macro", "macro_weighted"))
 
-  classes <- .apply_classes_exclude(levels(data[[truth_col]]), classes_exclude)
+  inputs  <- .prepare_inputs(data, truth_col, estimate_col, na_rm)
+  classes <- .apply_classes_exclude(levels(inputs$truth), classes_exclude)
 
-  per_class <- .compute_per_class(data[[truth_col]], data[[estimate_col]], classes)
+  per_class <- .compute_per_class(inputs$truth, inputs$estimate, classes)
 
   estimate_value <- if (estimator == "macro") {
     mean(per_class[[metric_col]], na.rm = TRUE)

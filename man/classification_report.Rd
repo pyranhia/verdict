@@ -4,7 +4,14 @@
 \alias{classification_report}
 \title{Classification report for multiclass models}
 \usage{
-classification_report(data, truth, estimate, classes_exclude = NULL, ...)
+classification_report(
+  data,
+  truth,
+  estimate,
+  classes_exclude = NULL,
+  na_rm = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{A data frame containing columns for truth and predictions.}
@@ -19,6 +26,9 @@ report. Excluded classes have no row in the output and do not contribute
 to the macro avg, weighted avg, or total support. Default \code{NULL}
 includes all classes.}
 
+\item{na_rm}{If \code{TRUE} (default), rows where \code{truth} or \code{estimate} is
+missing are dropped. If \code{FALSE}, missing values raise an error.}
+
 \item{...}{Currently unused. Reserved for future arguments.}
 }
 \value{
@@ -29,6 +39,13 @@ A tibble with one row per included class plus two summary rows
 \description{
 Returns per-class precision, recall, F1-score, and support, plus macro and
 weighted averages.
+}
+\details{
+Undefined ratios are set to 0, as with scikit-learn's default
+\code{zero_division} behaviour: a class that is never predicted gets precision
+0, and a class absent from \code{truth} gets recall 0. A warning lists the
+classes concerned. A class absent from both \code{truth} and \code{estimate} gets
+\code{NA} metrics and is left out of the averages.
 }
 \examples{
 library(tibble)
