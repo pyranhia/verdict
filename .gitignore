@@ -52,3 +52,6 @@ po/*~
 rsconnect/
 .Rdata
 .DS_Store
+
+# Raw downloads for data-raw scripts
+data-raw/zoocam/

@@ -12,7 +12,10 @@ Description: Extends the yardstick package with a classification_report()
     plankton image classification where a dominant "detritus" class biases
     aggregate metrics.
 License: MIT + file LICENSE
+Depends: 
+    R (>= 3.5)
 Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
 Suggests: 
     testthat (>= 3.0.0)

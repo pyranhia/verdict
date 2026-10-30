@@ -1,5 +1,8 @@
 # verdict (development version)
 
+* New `zoocam` dataset: random forest predictions on the ZooCAMNet test
+  set (193,039 plankton images, 40 classes), with `zoocam_taxa` giving the
+  planktonic status of each class. Built by `data-raw/zoocam_tidymodels.R`.
 * Classes with zero true positives now get F1 = 0 instead of `NA`. They
   were previously dropped from the macro and weighted averages, which
   inflated those averages.
