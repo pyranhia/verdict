@@ -1,5 +1,9 @@
 # verdict (development version)
 
+* `classification_report()` gains a `"micro avg"` row, between the
+  per-class rows and `"macro avg"`. It pools counts over the included
+  classes and equals accuracy when no class is excluded (scikit-learn's
+  `"accuracy"` row).
 * New `zoocam` dataset: random forest predictions on the ZooCAMNet test
   set (193,039 plankton images, 40 classes), with `zoocam_taxa` giving the
   planktonic status of each class. Built by `data-raw/zoocam_tidymodels.R`.

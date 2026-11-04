@@ -21,26 +21,55 @@
   fp <- n_pred - tp
   fn <- n_true - tp
 
-  empty         <- n_true == 0 & n_pred == 0
-  never_pred    <- n_true > 0 & n_pred == 0
-  absent_truth  <- n_true == 0 & n_pred > 0
+  empty <- n_true == 0 & n_pred == 0
+  never_pred <- n_true > 0 & n_pred == 0
+  absent_truth <- n_true == 0 & n_pred > 0
 
   .warn_classes(never_pred, "never predicted; their precision is set to 0")
   .warn_classes(absent_truth, "absent from `truth`; their recall is set to 0")
-  .warn_classes(empty, "absent from both `truth` and `estimate`; they are left out of the averages")
+  .warn_classes(
+    empty,
+    "absent from both `truth` and `estimate`; they are left out of the averages"
+  )
 
   precision <- ifelse(n_pred == 0, 0, tp / n_pred)
-  recall    <- ifelse(n_true == 0, 0, tp / n_true)
-  f1        <- ifelse(empty, NA_real_, 2 * tp / (2 * tp + fp + fn))
+  recall <- ifelse(n_true == 0, 0, tp / n_true)
+  f1 <- ifelse(empty, NA_real_, 2 * tp / (2 * tp + fp + fn))
   precision[empty] <- NA_real_
-  recall[empty]    <- NA_real_
+  recall[empty] <- NA_real_
 
   tibble::tibble(
-    class     = classes,
+    class = classes,
     precision = unname(precision),
-    recall    = unname(recall),
-    f1        = unname(f1),
-    support   = as.integer(n_true)
+    recall = unname(recall),
+    f1 = unname(f1),
+    support = as.integer(n_true)
+  )
+}
+
+#' Compute micro-averaged precision, recall, F1, and support
+#'
+#' Pools TP, predictions, and true labels over `classes`. As in
+#' `.compute_per_class()`, counts come from the full confusion matrix: an
+#' observation whose true class is not in `classes` but which is predicted as
+#' one of them counts as FP. Without exclusion, all three metrics equal
+#' accuracy. Undefined ratios are set to 0 (sklearn's `zero_division = 0`).
+#'
+#' @inheritParams .compute_per_class
+#' @return A one-row tibble with class `"micro avg"`.
+#' @noRd
+.compute_micro <- function(truth, estimate, classes) {
+  cm <- table(truth, estimate)
+  tp <- sum(diag(cm)[classes])
+  n_pred <- sum(colSums(cm)[classes])
+  n_true <- sum(rowSums(cm)[classes])
+
+  tibble::tibble(
+    class = "micro avg",
+    precision = if (n_pred == 0) 0 else tp / n_pred,
+    recall = if (n_true == 0) 0 else tp / n_true,
+    f1 = if (n_pred + n_true == 0) 0 else 2 * tp / (n_pred + n_true),
+    support = as.integer(n_true)
   )
 }
 
@@ -49,7 +78,9 @@
 .warn_classes <- function(flag, msg) {
   if (any(flag)) {
     rlang::warn(paste0(
-      "Some classes are ", msg, ": ",
+      "Some classes are ",
+      msg,
+      ": ",
       paste(names(flag)[flag], collapse = ", ")
     ))
   }
@@ -66,7 +97,7 @@
 #' @return A list with elements `truth` and `estimate` (factors).
 #' @noRd
 .prepare_inputs <- function(data, truth_col, estimate_col, na_rm) {
-  truth    <- data[[truth_col]]
+  truth <- data[[truth_col]]
   estimate <- data[[estimate_col]]
 
   for (col in c(truth_col, estimate_col)) {
@@ -76,16 +107,22 @@
   }
   if (!identical(levels(truth), levels(estimate))) {
     rlang::abort(paste0(
-      "`", truth_col, "` and `", estimate_col, "` must have the same levels, in the same order."
+      "`",
+      truth_col,
+      "` and `",
+      estimate_col,
+      "` must have the same levels, in the same order."
     ))
   }
 
   missing <- is.na(truth) | is.na(estimate)
   if (any(missing)) {
     if (!na_rm) {
-      rlang::abort("`truth` or `estimate` contains missing values; use `na_rm = TRUE` to drop them.")
+      rlang::abort(
+        "`truth` or `estimate` contains missing values; use `na_rm = TRUE` to drop them."
+      )
     }
-    truth    <- truth[!missing]
+    truth <- truth[!missing]
     estimate <- estimate[!missing]
   }
 
@@ -117,7 +154,9 @@
 
   classes <- setdiff(classes, classes_exclude)
   if (length(classes) == 0) {
-    rlang::abort("`classes_exclude` excludes all classes; nothing left to report.")
+    rlang::abort(
+      "`classes_exclude` excludes all classes; nothing left to report."
+    )
   }
 
   classes
@@ -142,13 +181,21 @@
 #' @return A tibble with one row and columns `.metric`, `.estimator`,
 #'   `.estimate`.
 #' @noRd
-.verdict_metric <- function(data, truth, estimate, metric_col, estimator, classes_exclude, na_rm) {
-  truth_col    <- rlang::as_name(rlang::ensym(truth))
+.verdict_metric <- function(
+  data,
+  truth,
+  estimate,
+  metric_col,
+  estimator,
+  classes_exclude,
+  na_rm
+) {
+  truth_col <- rlang::as_name(rlang::ensym(truth))
   estimate_col <- rlang::as_name(rlang::ensym(estimate))
 
   estimator <- rlang::arg_match(estimator, c("macro", "macro_weighted"))
 
-  inputs  <- .prepare_inputs(data, truth_col, estimate_col, na_rm)
+  inputs <- .prepare_inputs(data, truth_col, estimate_col, na_rm)
   classes <- .apply_classes_exclude(levels(inputs$truth), classes_exclude)
 
   per_class <- .compute_per_class(inputs$truth, inputs$estimate, classes)
@@ -156,12 +203,16 @@
   estimate_value <- if (estimator == "macro") {
     mean(per_class[[metric_col]], na.rm = TRUE)
   } else {
-    stats::weighted.mean(per_class[[metric_col]], per_class$support, na.rm = TRUE)
+    stats::weighted.mean(
+      per_class[[metric_col]],
+      per_class$support,
+      na.rm = TRUE
+    )
   }
 
   tibble::tibble(
-    .metric    = metric_col,
+    .metric = metric_col,
     .estimator = estimator,
-    .estimate  = estimate_value
+    .estimate = estimate_value
   )
 }
