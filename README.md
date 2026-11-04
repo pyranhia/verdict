@@ -55,14 +55,15 @@ pred <- factor(
 df <- tibble(truth = truth, pred = pred)
 
 classification_report(df, truth, pred)
-#> # A tibble: 5 × 5
+#> # A tibble: 6 × 5
 #>   class        precision recall    f1 support
 #>   <chr>            <dbl>  <dbl> <dbl>   <int>
 #> 1 cat              0.5    0.5   0.5         2
 #> 2 dog              0.5    0.667 0.571       3
 #> 3 fish             1      0.667 0.8         3
-#> 4 macro avg        0.667  0.611 0.624       8
-#> 5 weighted avg     0.688  0.625 0.639       8
+#> 4 micro avg        0.625  0.625 0.625       8
+#> 5 macro avg        0.667  0.611 0.624       8
+#> 6 weighted avg     0.688  0.625 0.639       8
 ```
 
 Excluding a class (e.g. a dominant, uninformative “detritus” class) from
@@ -70,13 +71,14 @@ the averages:
 
 ``` r
 classification_report(df, truth, pred, classes_exclude = "fish")
-#> # A tibble: 4 × 5
+#> # A tibble: 5 × 5
 #>   class        precision recall    f1 support
 #>   <chr>            <dbl>  <dbl> <dbl>   <int>
 #> 1 cat                0.5  0.5   0.5         2
 #> 2 dog                0.5  0.667 0.571       3
-#> 3 macro avg          0.5  0.583 0.536       5
-#> 4 weighted avg       0.5  0.6   0.543       5
+#> 3 micro avg          0.5  0.6   0.545       5
+#> 4 macro avg          0.5  0.583 0.536       5
+#> 5 weighted avg       0.5  0.6   0.543       5
 ```
 
 Single-value metrics, matching yardstick’s output format

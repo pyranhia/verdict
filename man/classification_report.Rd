@@ -23,8 +23,9 @@ classification_report(
 
 \item{classes_exclude}{Character vector of class names to exclude from the
 report. Excluded classes have no row in the output and do not contribute
-to the macro avg, weighted avg, or total support. Default \code{NULL}
-includes all classes.}
+to the averages or total support, except that an observation of an
+excluded class predicted as an included one counts as a false positive
+in the micro avg. Default \code{NULL} includes all classes.}
 
 \item{na_rm}{If \code{TRUE} (default), rows where \code{truth} or \code{estimate} is
 missing are dropped. If \code{FALSE}, missing values raise an error.}
@@ -32,13 +33,13 @@ missing are dropped. If \code{FALSE}, missing values raise an error.}
 \item{...}{Currently unused. Reserved for future arguments.}
 }
 \value{
-A tibble with one row per included class plus two summary rows
-(\code{"macro avg"} and \code{"weighted avg"}), and columns \code{class}, \code{precision},
-\code{recall}, \code{f1}, \code{support}.
+A tibble with one row per included class plus three summary rows
+(\code{"micro avg"}, \code{"macro avg"}, and \code{"weighted avg"}), and columns
+\code{class}, \code{precision}, \code{recall}, \code{f1}, \code{support}.
 }
 \description{
-Returns per-class precision, recall, F1-score, and support, plus macro and
-weighted averages.
+Returns per-class precision, recall, F1-score, and support, plus micro,
+macro, and weighted averages.
 }
 \details{
 Undefined ratios are set to 0, as with scikit-learn's default
@@ -46,6 +47,12 @@ Undefined ratios are set to 0, as with scikit-learn's default
 0, and a class absent from \code{truth} gets recall 0. A warning lists the
 classes concerned. A class absent from both \code{truth} and \code{estimate} gets
 \code{NA} metrics and is left out of the averages.
+
+The micro avg pools true positives, predictions, and true labels over the
+included classes before computing precision, recall, and F1. Without
+\code{classes_exclude}, all three equal accuracy: scikit-learn shows this row
+as \code{"accuracy"}, and as \code{"micro avg"} only when \code{labels} is a subset of
+the classes.
 }
 \examples{
 library(tibble)

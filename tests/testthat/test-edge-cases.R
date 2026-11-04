@@ -4,7 +4,7 @@ lv <- c("a", "b", "c")
 # "c" has support 2 but is never predicted: precision is 0/0, recall 0, F1 0.
 df_missed <- tibble::tibble(
   truth = factor(c("a", "a", "b", "b", "c", "c"), levels = lv),
-  pred  = factor(c("a", "a", "b", "b", "a", "b"), levels = lv)
+  pred = factor(c("a", "a", "b", "b", "a", "b"), levels = lv)
 )
 
 test_that("a class with zero TP gets F1 = 0, not NA", {
@@ -25,27 +25,33 @@ test_that("zero-TP classes count in the macro average (matches sklearn)", {
   result <- suppressWarnings(classification_report(df_missed, truth, pred))
   macro <- result[result$class == "macro avg", ]
   # sklearn: precision 0.444, recall 0.667, f1 0.533
-  expect_equal(macro$precision, (2/3 + 2/3 + 0) / 3, tolerance = 1e-9)
-  expect_equal(macro$recall,    (1 + 1 + 0) / 3,     tolerance = 1e-9)
-  expect_equal(macro$f1,        (0.8 + 0.8 + 0) / 3, tolerance = 1e-9)
+  expect_equal(macro$precision, (2 / 3 + 2 / 3 + 0) / 3, tolerance = 1e-9)
+  expect_equal(macro$recall, (1 + 1 + 0) / 3, tolerance = 1e-9)
+  expect_equal(macro$f1, (0.8 + 0.8 + 0) / 3, tolerance = 1e-9)
 })
 
 test_that("single-value metrics agree on zero-TP classes", {
   expect_equal(
     suppressWarnings(f1_meas(df_missed, truth, pred))$.estimate,
-    (0.8 + 0.8 + 0) / 3, tolerance = 1e-9
+    (0.8 + 0.8 + 0) / 3,
+    tolerance = 1e-9
   )
   expect_warning(precision(df_missed, truth, pred), "never predicted")
 })
 
 test_that("excluding the never-predicted class silences the warning", {
-  expect_no_warning(classification_report(df_missed, truth, pred, classes_exclude = "c"))
+  expect_no_warning(classification_report(
+    df_missed,
+    truth,
+    pred,
+    classes_exclude = "c"
+  ))
 })
 
 # --- Class predicted but absent from truth ---
 df_spurious <- tibble::tibble(
   truth = factor(c("a", "a", "b", "b"), levels = lv),
-  pred  = factor(c("a", "c", "b", "b"), levels = lv)
+  pred = factor(c("a", "c", "b", "b"), levels = lv)
 )
 
 test_that("a class absent from truth gets recall = 0 with a warning", {
@@ -62,7 +68,7 @@ test_that("a class absent from truth gets recall = 0 with a warning", {
 # --- Empty level (neither in truth nor predicted) ---
 df_empty <- tibble::tibble(
   truth = factor(c("a", "a", "b", "b"), levels = lv),
-  pred  = factor(c("a", "b", "b", "b"), levels = lv)
+  pred = factor(c("a", "b", "b", "b"), levels = lv)
 )
 
 test_that("an empty level gets NA metrics and is left out of the averages", {
@@ -72,13 +78,24 @@ test_that("an empty level gets NA metrics and is left out of the averages", {
   )
   expect_true(is.na(result$f1[result$class == "c"]))
   macro <- result[result$class == "macro avg", ]
-  expect_equal(macro$precision, (1 + 2/3) / 2, tolerance = 1e-9)
+  expect_equal(macro$precision, (1 + 2 / 3) / 2, tolerance = 1e-9)
+})
+
+test_that("micro avg is 0 when all included classes are empty", {
+  result <- suppressWarnings(
+    classification_report(df_empty, truth, pred, classes_exclude = c("a", "b"))
+  )
+  micro <- result[result$class == "micro avg", ]
+  expect_equal(micro$precision, 0)
+  expect_equal(micro$recall, 0)
+  expect_equal(micro$f1, 0)
+  expect_equal(micro$support, 0L)
 })
 
 # --- Missing values ---
 df_na <- tibble::tibble(
   truth = factor(c("a", "a", "b", NA, "c", "c"), levels = lv),
-  pred  = factor(c("a", NA, "b", "b", "c", "c"), levels = lv)
+  pred = factor(c("a", NA, "b", "b", "c", "c"), levels = lv)
 )
 
 test_that("rows with NA are removed by default", {
@@ -92,7 +109,10 @@ test_that("rows with NA are removed by default", {
 })
 
 test_that("na_rm = FALSE with NA present raises an error", {
-  expect_error(classification_report(df_na, truth, pred, na_rm = FALSE), "missing values")
+  expect_error(
+    classification_report(df_na, truth, pred, na_rm = FALSE),
+    "missing values"
+  )
   expect_error(precision(df_na, truth, pred, na_rm = FALSE), "missing values")
 })
 
@@ -106,7 +126,7 @@ test_that("truth and estimate must be factors", {
 test_that("truth and estimate must have identical levels", {
   df_lv <- tibble::tibble(
     truth = factor(c("a", "b"), levels = c("a", "b")),
-    pred  = factor(c("a", "b"), levels = c("a", "b", "c"))
+    pred = factor(c("a", "b"), levels = c("a", "b", "c"))
   )
   expect_error(classification_report(df_lv, truth, pred), "same levels")
   expect_error(f1_meas(df_lv, truth, pred), "same levels")
