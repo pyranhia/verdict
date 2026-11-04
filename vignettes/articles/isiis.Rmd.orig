@@ -1,0 +1,54 @@
+---
+title: "Evaluating a classifier on the classes that matter"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+Sys.setLanguage("en")
+
+```
+
+```{r setup, message = FALSE}
+library(verdict)
+library(dplyr)
+```
+
+## Plankton images and the imbalanced problem
+
+
+```{r read_data}
+isiis <- readRDS(here::here("data-raw", "isiis", "isiis.rds"))
+isiis_taxa <- readRDS(here::here("data-raw", "isiis", "isiis_taxa.rds"))
+```
+
+```{r class_counts}
+class_counts <- isiis |>
+  count(truth, sort = TRUE) |>
+  mutate(prop = n / sum(n)) |>
+  left_join(isiis_taxa, by = join_by(truth == class))
+print(class_counts, n = Inf)
+
+non_plankton <- isiis_taxa |>
+  filter(!plankton) |>
+  pull(class)
+```
+
+The test set holds `r format(nrow(isiis), big.mark = " ")` objects in `r nlevels(isiis$truth)`
+classes. Detritus alone accounts for
+`r round(100 * class_counts$prop[class_counts$truth == "detritus"])`% of them.
+`r length(non_plankton)` classes are not plankton:
+`r paste(non_plankton, collapse = ", ")`.
+
+
+## A random forest, trained without class weights
+
+## A first look: accuracy
+
+## Where did the objects end up?
+
+## Focusing on plankton classes
+
+## How to do better?

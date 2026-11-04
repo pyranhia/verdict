@@ -25,3 +25,4 @@ Imports:
     dplyr,
     rlang,
     tibble
+Config/Needs/website: rmarkdown
